@@ -34,8 +34,11 @@ int validate_iter(char* iter){
 
 void print_vector(cord* cord){
     while(cord != NULL){
-        printf("%.4f,", cord->value);
+        printf("%.4f", cord->value);
         cord = cord->next;
+        if(cord != NULL){
+            printf(",");
+        }
     }
     printf("\n");
 }
@@ -74,7 +77,7 @@ vector* file_to_vectors() {
     int is_end_of_file;
     char *line =NULL;
     is_end_of_file = getline(&line, &bufsize, stdin);
-    if(is_end_of_file == EOF){
+    if(is_end_of_file == -1){
         return NULL;
     }
     int d = 1;
