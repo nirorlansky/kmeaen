@@ -5,7 +5,7 @@ ERROR_MESSAGE = "An Error Has Occurred"
 
 
 def k_means(K, input_data, iter="200"):
-    if not validate__input_data(input_data):
+    if not validate_input_data(input_data):
         return
     vectors = file_to_vectors(input_data)
     if validate_K(K, len(vectors)):
@@ -84,7 +84,7 @@ def validate_iter(iter):
     return iter.isnumeric() and 1000 > int(iter) > 1
 
 
-def validate__input_data(input_data):
+def validate_input_data(input_data):
     return input_data.endswith(".txt")
 
 
