@@ -5,16 +5,20 @@
 #define ERROR_MESSAGE "An Error Has Occurred"
 
 // Function Prototypes
-int validate_K(char *K, int N);
-int validate_iter(char *iter);
-int validate_input_data(char *input_data);
-double** file_to_vectors();
-double** compute_centroids(int K, int iter, double **vectors, int num_vectors, int dim, double epsilon);
-double* compute_new_centroid(double **group, int group_size, int dim);
-double round_four_digits(double num);
-void print_centroids(double **centroids, int K, int dim);
 
 
+struct cord {
+    double value;
+    struct cord* next;
+};
+
+struct vector {
+    struct vector* next;
+    struct cord* cords;
+};
+
+typedef struct vector vector;
+typedef struct cord cord;
 
 int validate_K(char* K, int N){
     char* end;
@@ -28,11 +32,51 @@ int validate_iter(char* iter){
     return (*end == '\0' && 1000 > num_iter && num_iter > 1);
 }
 
-double** file_to_vectors() {
+void print_vector(cord* cord){
+    while(cord != NULL){
+        printf("%.4f,", cord->value);
+        cord = cord->next;
+    }
+    printf("\n");
+}
+
+cord* line_to_cord(char* line, int d){
+    char* ptr;
+    ptr = line;
+    struct cord* head_cord;
+    head_cord = malloc(sizeof(struct cord));
+    head_cord->next = NULL;
+    struct cord* curr_cord;
+    curr_cord = head_cord;
+    for (size_t i = 0; i < d; i++)
+    {
+        while (*ptr != ',' && *ptr != '\n')
+        {
+            ptr++;
+        }
+        struct cord* new_cord;
+        new_cord = malloc(sizeof(struct cord));
+        new_cord->next = NULL;
+        new_cord->value = strtold(line, &ptr);
+        ptr++;
+        line = ptr;
+        curr_cord->next = new_cord;
+        curr_cord = new_cord;
+    }
+    curr_cord = head_cord->next;
+    free(head_cord);
+    return curr_cord;
+}
+
+
+vector* file_to_vectors() {
     size_t bufsize = 0;
-    int c;
+    int is_end_of_file;
     char *line =NULL;
-    c = getline(&line, &bufsize, stdin);
+    is_end_of_file = getline(&line, &bufsize, stdin);
+    if(is_end_of_file == EOF){
+        return NULL;
+    }
     int d = 1;
     char* ptr = line;
     // find the vector's number of dimensions
@@ -42,65 +86,33 @@ double** file_to_vectors() {
         }
         ptr++;
     }
+    struct vector* head_vector;
+    head_vector = malloc(sizeof(struct vector));
+    head_vector->next = NULL;
+    struct vector* curr_vector;
+    curr_vector = head_vector;
     do
     {
-        char* vector = (char*)malloc(d*sizeof(char)+1);
-        ptr = line;
-        for(int i=0;i < d; i++){
-            int count = 0;
-            while(*ptr != ',' && *ptr != '\n'){
-                count++;
-                ptr++;
-            }
-            char* word = (char*)malloc(count*sizeof(char));
-            for(int j=0; j < count; j++){
-                word[j] = line[j];
-            }
-            //printf("%s", word);
-            vector[i] = *word;
-            if(*ptr == ','){
-                line = ptr++;
-            }
-        }
-        // printf("%s\n", vector);
-    } while ((c = getline(&line, &bufsize, stdin)) != -1);
-    
+        struct vector* new_vector;
+        new_vector = malloc(sizeof(struct vector));
+        curr_vector->next = new_vector;
+        curr_vector = new_vector;
+        struct cord* curr_cord = line_to_cord(line, d);
+        curr_vector->cords = curr_cord;
+        curr_vector->next = NULL;
 
-    // do
-    // {
-    //     double *vector = (double*)malloc(d*sizeof(double));
-    //     for (int i = 0; i < d; i++)
-    //     {
-    //         double sign = 1;
-    //         double full = 0;
-    //         double fraction = 0;
-    //         if(*line == '-'){
-    //             sign = -1;
-    //             line++;
-    //         }
-    //         while(*line != '.'){
-    //             full = full * 10 + (*line - '0');
-    //             line++;
-    //         while (*line != ',' && *line != '\n')
-    //         {
-    //             fraction = fraction * 0.1 + (*line - '0');
-    //             line++;
-    //         }
-    //         vector[i] = full + fraction * 0.1;
-    //     }
-        
-    //     printf(".2f\n", vector);
-        
-    // }
-        
-    // } while ((c = getline(&line, &bufsize, stdin)) != -1);
-    double** f;
-    return f;
+    }while ((is_end_of_file = getline(&line, &bufsize, stdin)) != EOF);
+    curr_vector = head_vector->next;
+    free(head_vector);
+    return curr_vector;
 }
 
 int main(int argc, char **argv){
     char* K = argv[1];
     char* iter = argv[2];
-    printf("%s", iter);
-    file_to_vectors();
+    struct vector* vectors = file_to_vectors();
+    while (vectors != NULL){
+        print_vector(vectors->cords);
+        vectors = vectors->next;
+    }
 }
