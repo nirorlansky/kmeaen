@@ -330,5 +330,5 @@ int main(int argc, char **argv){
         centroids = centroids->next;
     }
     free_memory(vectors, centroids);
-    return 1;
+    return 0;
 }
