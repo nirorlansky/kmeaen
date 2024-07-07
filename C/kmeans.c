@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -6,8 +8,6 @@
 
 int N = 0;
 int d = 0;
-// Function Prototypes
-
 
 struct cord {
     double value;
@@ -62,22 +62,23 @@ void print_vector(cord* cord){
 
 cord* line_to_cord(char* line){
     char* ptr;
-    ptr = line;
     struct cord* head_cord;
+    struct cord* curr_cord;
+    int i;
+    ptr = line;
     head_cord = malloc(sizeof(struct cord));
     head_cord->next = NULL;
-    struct cord* curr_cord;
     curr_cord = head_cord;
-    for (size_t i = 0; i < d; i++)
+    for (i = 0; i < d; i++)
     {
+        struct cord* new_cord;
         while (*ptr != ',' && *ptr != '\n')
         {
             ptr++;
         }
-        struct cord* new_cord;
         new_cord = malloc(sizeof(struct cord));
         new_cord->next = NULL;
-        new_cord->value = strtold(line, &ptr);
+        new_cord->value = strtod(line, &ptr);
         ptr++;
         line = ptr;
         curr_cord->next = new_cord;
@@ -102,31 +103,32 @@ vector* file_to_vectors() {
     size_t bufsize = 0;
     int is_end_of_file;
     char *line =NULL;
+    char* ptr;
+    struct vector* head_vector;
+    struct vector* curr_vector;
     is_end_of_file = getline(&line, &bufsize, stdin);
     if(is_end_of_file == -1){
         return NULL;
     }
     d = 1;
-    char* ptr = line;
-    // find the vector's number of dimensions
+    ptr = line;
     while(*ptr != '\n'){
         if(*ptr == ','){
             d++;
         }
         ptr++;
     }
-    struct vector* head_vector;
     head_vector = malloc(sizeof(struct vector));
     head_vector->next = NULL;
-    struct vector* curr_vector;
     curr_vector = head_vector;
     do
     {
         struct vector* new_vector;
+        struct cord* curr_cord;
         new_vector = malloc(sizeof(struct vector));
         curr_vector->next = new_vector;
         curr_vector = new_vector;
-        struct cord* curr_cord = line_to_cord(line);
+        curr_cord = line_to_cord(line);
         curr_vector->cords = curr_cord;
         curr_vector->next = NULL;
         N++;
@@ -147,12 +149,13 @@ void copy_cords(cord* from, cord* to){
 
 cord* create_zeros_vector(){
     struct cord* zeros;
+    struct cord* head;
+    int j;
     zeros = malloc(sizeof(struct cord));
     zeros->next = NULL;
     zeros->value = 0;
-    struct cord* head;
     head = zeros;
-    for (size_t j = 0; j < d-1; j++)
+    for (j = 0; j < d-1; j++)
     {
         struct cord* next;
         next = malloc(sizeof(struct cord));
@@ -166,13 +169,14 @@ cord* create_zeros_vector(){
 
 centroid* initial_centroids(vector* vectors, long K){
     struct centroid* head_centroid;
+    struct centroid* curr_centroid;
+    int i;
     head_centroid = malloc(sizeof(struct centroid));
     head_centroid->next = NULL;
     head_centroid->group_size = 0;
     head_centroid->sum = NULL;
-    struct centroid* curr_centroid;
     curr_centroid = head_centroid;
-    for (size_t i = 0; i < K; i++)
+    for (i = 0; i < K; i++)
     {
         struct centroid* new_centroid;
         new_centroid = malloc(sizeof(struct centroid));
@@ -193,9 +197,9 @@ centroid* initial_centroids(vector* vectors, long K){
 
 centroid* find_min_dist(centroid* centroids, cord* cords){
     struct centroid* min_cent;
-    min_cent = centroids;
     double min_dist = -1;
     double curr_dist;
+    min_cent = centroids;
     while (centroids != NULL)
     {
         curr_dist = find_distance(centroids->cords, cords);
@@ -264,8 +268,8 @@ centroid* compute_centroids(vector* vectors, long K, long iter, double epsilon){
     struct vector* iter_vec;
     struct centroid* curr_centroid;
     struct centroid* closest_centroid;
-    int changed;
-    for (size_t i = 0; i < iter; i++)
+    int changed, i;
+    for (i = 0; i < iter; i++)
     {
         changed = 0;
         iter_vec = vectors;
@@ -300,8 +304,8 @@ int main(int argc, char **argv){
     long K;
     long iter;
     struct vector* vectors;
-    vectors = file_to_vectors();
     struct centroid* centroids;
+    vectors = file_to_vectors();
     if(argc == 1 || argc > 3){
         printf("%s\n", ERROR_MESSAGE);
         return 1;
@@ -325,4 +329,6 @@ int main(int argc, char **argv){
         print_vector(centroids->cords);
         centroids = centroids->next;
     }
+    free_memory(vectors, centroids);
+    return 1;
 }
