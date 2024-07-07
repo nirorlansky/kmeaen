@@ -32,27 +32,37 @@ def round_four_digits(num):
     if len(parts) != 2:
         print(ERROR_MESSAGE)
         return
-    zeros = "0" * (4-len(parts[1]))
+    zeros = "0" * (4 - len(parts[1]))
     num = ".".join([parts[0], parts[1] + zeros])
     return num
+
+
+def dist(v1, v2):
+    sum = 0
+    n = len(v1)
+    for i in range(n):
+        sum += pow(v1[i] - v2[i], 2)
+    return math.sqrt(sum)
+
 
 def compute_centroids(K, iter, vectors, epsilon):
     groups = {vectors[i]: [] for i in range(K)}
     for iteration in range(iter):
         changed = False
         for vector in vectors:
-            centroid = min(groups.keys(), key=lambda x: math.dist(x, vector))
+            centroid = min(groups.keys(), key=lambda x: dist(x, vector))
             groups[centroid].append(vector)
         new_groups = {}
         for centroid, group in groups.items():
             new_centroid = compute_new_centroid(group) if len(group) > 0 else centroid
-            if math.dist(centroid, new_centroid) > epsilon:
+            if dist(centroid, new_centroid) > epsilon:
                 changed = True
             new_groups[new_centroid] = []
         if not changed:
             return groups.keys()
         groups = new_groups
     return groups.keys()
+
 
 def file_to_vectors(input_data):
     vectors = []
@@ -72,7 +82,7 @@ def compute_new_centroid(group):
     for i in range(d):
         for v in group:
             new_centroid[i] += v[i]
-        new_centroid[i] = new_centroid[i]/len(group)
+        new_centroid[i] = new_centroid[i] / len(group)
     return tuple(new_centroid)
 
 
