@@ -136,6 +136,7 @@ vector* file_to_vectors() {
     }while ((is_end_of_file = getline(&line, &bufsize, stdin)) != EOF);
     curr_vector = head_vector->next;
     free(head_vector);
+    free(line);
     return curr_vector;
 }
 
@@ -253,11 +254,13 @@ void free_memory(vector* vectors, centroid* centroids){
         next_cent = centroids->next;
         free_cords(centroids->cords);
         free_cords(centroids->sum);
+        free(centroids);
         centroids = next_cent;        
     }
     while(vectors != NULL){
         next_vec = vectors->next;
         free_cords(vectors->cords);
+        free(vectors);
         vectors = next_vec;        
     }
 }
@@ -304,7 +307,7 @@ int main(int argc, char **argv){
     long K;
     long iter;
     struct vector* vectors;
-    struct centroid* centroids;
+    struct centroid* centroids, *centroids_iter;
     vectors = file_to_vectors();
     if(argc == 1 || argc > 3){
         printf("%s\n", ERROR_MESSAGE);
@@ -325,9 +328,10 @@ int main(int argc, char **argv){
         return 1;
     }
     centroids = compute_centroids(vectors, K, iter, 0.001);
-    while (centroids != NULL){
-        print_vector(centroids->cords);
-        centroids = centroids->next;
+    centroids_iter = centroids;
+    while (centroids_iter != NULL){
+        print_vector(centroids_iter->cords);
+        centroids_iter = centroids_iter->next;
     }
     free_memory(vectors, centroids);
     return 0;
