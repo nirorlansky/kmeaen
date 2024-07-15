@@ -9,12 +9,12 @@ def k_means(K, input_data, iter="200"):
         return
     vectors = file_to_vectors(input_data)
     if validate_K(K, len(vectors)):
-        K = int(K)
+        K = int(float(K))
     else:
         print("Invalid number of clusters!")
         return
     if validate_iter(iter):
-        iter = int(iter)
+        iter = int(float(iter))
     else:
         print("Invalid maximum iteration!")
         return
@@ -87,11 +87,19 @@ def compute_new_centroid(group):
 
 
 def validate_K(K, N):
-    return K.isnumeric() and N > int(K) > 1
+    try:
+        K = float(K)
+    except ValueError:
+        return False
+    return int(float(K)) == float(K) and N > int(float(K)) > 1
 
 
 def validate_iter(iter):
-    return iter.isnumeric() and 1000 > int(iter) > 1
+    try:
+        iter = float(iter)
+    except ValueError:
+        return False
+    return int(iter) == iter and 1000 > iter > 1
 
 
 def validate_input_data(input_data):
